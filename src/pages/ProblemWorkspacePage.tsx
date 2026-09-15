@@ -37,7 +37,7 @@ export const ProblemWorkspacePage: React.FC<ProblemWorkspacePageProps> = ({ slug
   const [leftTab, setLeftTab] = useState<'description' | 'submissions' | 'discussions' | 'solutions'>('description');
   
   // Editor State
-  const [language, setLanguage] = useState<SupportedLanguage>('python');
+  const [language, setLanguage] = useState<SupportedLanguage>('java');
   const [code, setCode] = useState<string>('');
   
   // Console & Execution State
