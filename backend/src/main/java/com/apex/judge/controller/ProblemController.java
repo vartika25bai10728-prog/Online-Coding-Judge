@@ -1,5 +1,8 @@
 package com.apex.judge.controller;
 
+import com.apex.judge.exception.InvalidSubmissionException;
+import com.apex.judge.exception.ResourceNotFoundException;
+import com.apex.judge.model.Difficulty;
 import com.apex.judge.model.Problem;
 import com.apex.judge.repository.ProblemRepository;
 import org.springframework.http.ResponseEntity;
@@ -24,19 +27,13 @@ public class ProblemController {
             @RequestParam(required = false) String difficulty,
             @RequestParam(required = false) String search
     ) {
-        List<Problem> problems = problemRepository.findAll();
-        // In-memory or query filters
-        if (difficulty != null && !difficulty.equalsIgnoreCase("ALL")) {
-            problems = problems.stream()
-                    .filter(p -> p.getDifficulty().equalsIgnoreCase(difficulty))
-                    .toList();
-        }
-        if (search != null && !search.isBlank()) {
-            String query = search.toLowerCase();
-            problems = problems.stream()
-                    .filter(p -> p.getTitle().toLowerCase().contains(query) || p.getTags().toLowerCase().contains(query))
-                    .toList();
-        }
+        Difficulty diff = (difficulty != null && !difficulty.equalsIgnoreCase("ALL"))
+                ? Difficulty.fromString(difficulty)
+                : null;
+        String query = (search != null && !search.isBlank()) ? search.trim() : null;
+
+        // Uses the explicit JPQL @Query defined in ProblemRepository
+        List<Problem> problems = problemRepository.searchProblems(diff, query);
 
         return ResponseEntity.ok(Map.of(
                 "problems", problems,
@@ -48,11 +45,17 @@ public class ProblemController {
     public ResponseEntity<?> getProblemBySlug(@PathVariable String slug) {
         return problemRepository.findBySlug(slug)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException("Problem", "slug", slug));
     }
 
     @PostMapping
     public ResponseEntity<?> createProblem(@RequestBody Problem problem) {
+        if (problem.getTitle() == null || problem.getTitle().isBlank()) {
+            throw new InvalidSubmissionException("Problem title cannot be empty");
+        }
+        if (problem.getSlug() == null || problem.getSlug().isBlank()) {
+            throw new InvalidSubmissionException("Problem slug cannot be empty");
+        }
         Problem saved = problemRepository.save(problem);
         return ResponseEntity.ok(saved);
     }

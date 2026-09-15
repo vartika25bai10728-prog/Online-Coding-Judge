@@ -20,6 +20,17 @@ public class SandboxExecutor {
         public long memoryMb;
     }
 
+    /**
+     * Overloaded execute method with default limits (2000ms time limit, 256MB memory limit).
+     */
+    public ExecutionResult execute(String language, String code, String input) {
+        return execute(language, code, input, 2000, 256);
+    }
+
+    /**
+     * Primary execution method managing process lifecycles, stream I/O via Reader/Writer,
+     * and isolated process timeouts.
+     */
     public ExecutionResult execute(String language, String code, String input, int timeLimitMs, int memoryLimitMb) {
         ExecutionResult result = new ExecutionResult();
         Path tempDir = null;
@@ -48,7 +59,6 @@ public class SandboxExecutor {
                 case "java":
                     sourceFile = new File(tempDir.toFile(), "Solution.java");
                     Files.writeString(sourceFile.toPath(), code, StandardCharsets.UTF_8);
-                    // In container sandbox, compile and run
                     pb = new ProcessBuilder("java", sourceFile.getAbsolutePath());
                     break;
 
@@ -70,11 +80,11 @@ public class SandboxExecutor {
             pb.directory(tempDir.toFile());
             Process process = pb.start();
 
-            // Feed STDIN
-            if (input != null) {
-                try (OutputStream os = process.getOutputStream()) {
-                    os.write(input.getBytes(StandardCharsets.UTF_8));
-                    os.flush();
+            // Feed STDIN using BufferedWriter & OutputStreamWriter (Character Stream Writer)
+            if (input != null && !input.isEmpty()) {
+                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8))) {
+                    writer.write(input);
+                    writer.flush();
                 }
             }
 
@@ -91,8 +101,10 @@ public class SandboxExecutor {
             }
 
             result.exitCode = process.exitValue();
-            result.stdout = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            result.stderr = new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+
+            // Read STDOUT and STDERR using BufferedReader & InputStreamReader (Character Stream Reader)
+            result.stdout = readCharacterStream(process.getInputStream());
+            result.stderr = readCharacterStream(process.getErrorStream());
             result.memoryMb = 32; // Baseline execution estimate
 
         } catch (Exception e) {
@@ -107,6 +119,23 @@ public class SandboxExecutor {
         }
 
         return result;
+    }
+
+    /**
+     * Reads process character stream using BufferedReader with a standard while loop.
+     */
+    private String readCharacterStream(InputStream inputStream) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!builder.isEmpty()) {
+                    builder.append("\n");
+                }
+                builder.append(line);
+            }
+        }
+        return builder.toString();
     }
 
     private void deleteDirectory(File dir) {

@@ -1,18 +1,25 @@
 package com.apex.judge.controller;
 
 import com.apex.judge.config.JwtService;
+import com.apex.judge.exception.InvalidSubmissionException;
+import com.apex.judge.exception.ResourceNotFoundException;
 import com.apex.judge.model.Problem;
 import com.apex.judge.model.Submission;
+import com.apex.judge.model.SubmissionStatus;
 import com.apex.judge.model.User;
+import com.apex.judge.model.Verdict;
 import com.apex.judge.repository.ProblemRepository;
 import com.apex.judge.repository.SubmissionRepository;
+import com.apex.judge.repository.SystemStatsJdbcRepository;
 import com.apex.judge.repository.UserRepository;
+import com.apex.judge.service.JudgeConcurrencyManager;
 import com.apex.judge.service.JudgeQueueService;
 import com.apex.judge.service.SandboxExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.util.*;
 
 @RestController
@@ -26,6 +33,8 @@ public class SubmissionController {
     private final JudgeQueueService queueService;
     private final SandboxExecutor sandboxExecutor;
     private final JwtService jwtService;
+    private final SystemStatsJdbcRepository statsJdbcRepository;
+    private final JudgeConcurrencyManager concurrencyManager;
 
     public SubmissionController(
             SubmissionRepository submissionRepository,
@@ -33,7 +42,9 @@ public class SubmissionController {
             UserRepository userRepository,
             JudgeQueueService queueService,
             SandboxExecutor sandboxExecutor,
-            JwtService jwtService
+            JwtService jwtService,
+            SystemStatsJdbcRepository statsJdbcRepository,
+            JudgeConcurrencyManager concurrencyManager
     ) {
         this.submissionRepository = submissionRepository;
         this.problemRepository = problemRepository;
@@ -41,6 +52,8 @@ public class SubmissionController {
         this.queueService = queueService;
         this.sandboxExecutor = sandboxExecutor;
         this.jwtService = jwtService;
+        this.statsJdbcRepository = statsJdbcRepository;
+        this.concurrencyManager = concurrencyManager;
     }
 
     @PostMapping
@@ -52,8 +65,18 @@ public class SubmissionController {
         String language = body.get("language");
         String code = body.get("code");
 
-        Problem problem = problemRepository.findById(problemId).orElse(null);
-        if (problem == null) return ResponseEntity.badRequest().body(Map.of("error", "Problem not found"));
+        if (problemId == null || problemId.isBlank()) {
+            throw new InvalidSubmissionException("problemId is required");
+        }
+        if (code == null || code.isBlank()) {
+            throw new InvalidSubmissionException("Solution code cannot be empty");
+        }
+        if (language == null || language.isBlank()) {
+            throw new InvalidSubmissionException("Programming language must be specified");
+        }
+
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Problem", "id", problemId));
 
         User user = null;
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -63,7 +86,6 @@ public class SubmissionController {
         }
 
         if (user == null) {
-            // Default demo coder
             user = userRepository.findAll().stream().findFirst().orElse(null);
         }
 
@@ -73,17 +95,18 @@ public class SubmissionController {
         submission.setUser(user);
         submission.setLanguage(language);
         submission.setCode(code);
-        submission.setStatus("QUEUED");
-        submission.setVerdict("PENDING");
+        submission.setStatus(SubmissionStatus.QUEUED);
+        submission.setVerdict(Verdict.PENDING);
 
         submissionRepository.save(submission);
 
-        // Asynchronous push to Redis queue
+        // Push to Redis FIFO queue
         queueService.enqueueSubmission(submission.getId());
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
                 "submissionId", submission.getId(),
-                "status", "QUEUED",
+                "status", submission.getStatus().name(),
+                "verdict", submission.getVerdict().name(),
                 "message", "Submission received and queued for execution"
         ));
     }
@@ -92,14 +115,26 @@ public class SubmissionController {
     public ResponseEntity<?> getSubmission(@PathVariable String id) {
         return submissionRepository.findById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException("Submission", "id", id));
     }
 
     @GetMapping
     public ResponseEntity<?> getSubmissions(
             @RequestParam(required = false) String userId,
-            @RequestParam(required = false) String problemId
+            @RequestParam(required = false) String problemId,
+            @RequestParam(required = false, defaultValue = "false") boolean acceptedOnly,
+            @RequestParam(required = false, defaultValue = "false") boolean fastestOnly
     ) {
+        // Explicit JPQL Query: Accepted solutions by user
+        if (userId != null && acceptedOnly) {
+            return ResponseEntity.ok(submissionRepository.findAcceptedSubmissionsByUser(userId));
+        }
+
+        // Explicit JPQL Query: Fastest accepted submissions for problem
+        if (problemId != null && fastestOnly) {
+            return ResponseEntity.ok(submissionRepository.findFastestSubmissionsForProblem(problemId, Verdict.ACCEPTED));
+        }
+
         if (userId != null) {
             return ResponseEntity.ok(submissionRepository.findByUserIdOrderByCreatedAtDesc(userId));
         }
@@ -109,6 +144,28 @@ public class SubmissionController {
         return ResponseEntity.ok(submissionRepository.findAllByOrderByCreatedAtDesc());
     }
 
+    /**
+     * Demonstrates Raw JDBC direct SQL reporting query via PreparedStatement & ResultSet.
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<?> getPlatformStatistics() throws SQLException {
+        SystemStatsJdbcRepository.PlatformStatistics stats = statsJdbcRepository.fetchAggregatedStatistics();
+        return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * Exposes synchronized concurrency metrics from the worker thread pool monitor.
+     */
+    @GetMapping("/concurrency-stats")
+    public ResponseEntity<?> getConcurrencyStats() {
+        return ResponseEntity.ok(Map.of(
+                "activeWorkers", concurrencyManager.getActiveWorkers(),
+                "peakConcurrentWorkers", concurrencyManager.getPeakConcurrentWorkers(),
+                "totalEvaluationsProcessed", concurrencyManager.getTotalEvaluationsProcessed(),
+                "fastestRuntimes", concurrencyManager.getFastestRuntimesSnapshot()
+        ));
+    }
+
     @PostMapping("/run")
     public ResponseEntity<?> runQuickTest(@RequestBody Map<String, Object> body) {
         String language = (String) body.get("language");
@@ -116,7 +173,7 @@ public class SubmissionController {
         List<Map<String, String>> customCases = (List<Map<String, String>>) body.get("customCases");
 
         if (customCases == null || customCases.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "No test cases provided"));
+            throw new InvalidSubmissionException("At least one test case must be provided for test runs");
         }
 
         List<Map<String, Object>> results = new ArrayList<>();

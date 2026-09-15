@@ -24,11 +24,13 @@ public class Submission {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String code;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private String verdict = "PENDING"; // "ACCEPTED", "WRONG_ANSWER", "TIME_LIMIT_EXCEEDED", etc.
+    private Verdict verdict = Verdict.PENDING;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status = "QUEUED"; // "QUEUED", "COMPILING", "RUNNING", "JUDGING", "COMPLETED"
+    private SubmissionStatus status = SubmissionStatus.QUEUED;
 
     private Integer runtimeMs;
     private Integer memoryMb;
@@ -60,11 +62,13 @@ public class Submission {
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
 
-    public String getVerdict() { return verdict; }
-    public void setVerdict(String verdict) { this.verdict = verdict; }
+    public Verdict getVerdict() { return verdict; }
+    public void setVerdict(Verdict verdict) { this.verdict = verdict; }
+    public void setVerdict(String verdict) { this.verdict = Verdict.fromString(verdict); }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public SubmissionStatus getStatus() { return status; }
+    public void setStatus(SubmissionStatus status) { this.status = status; }
+    public void setStatus(String status) { this.status = SubmissionStatus.fromString(status); }
 
     public Integer getRuntimeMs() { return runtimeMs; }
     public void setRuntimeMs(Integer runtimeMs) { this.runtimeMs = runtimeMs; }

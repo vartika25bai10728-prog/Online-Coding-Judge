@@ -24,4 +24,18 @@ class SandboxExecutorTest {
         assertEquals(1, result.exitCode);
         assertTrue(result.stderr.contains("Unsupported language: fortran"));
     }
+
+    @Test
+    @DisplayName("Should support overloaded execute method with default limits")
+    void testOverloadedExecuteMethod() {
+        SandboxExecutor.ExecutionResult result = sandboxExecutor.execute(
+                "ruby",
+                "puts 'hi'",
+                ""
+        );
+
+        assertNotNull(result);
+        assertEquals(1, result.exitCode);
+        assertTrue(result.stderr.contains("Unsupported language: ruby"));
+    }
 }

@@ -2,10 +2,13 @@ package com.apex.judge.service;
 
 import com.apex.judge.model.Problem;
 import com.apex.judge.model.Submission;
+import com.apex.judge.model.SubmissionStatus;
 import com.apex.judge.model.TestCase;
+import com.apex.judge.model.Verdict;
 import com.apex.judge.repository.ProblemRepository;
 import com.apex.judge.repository.SubmissionRepository;
 import com.apex.judge.repository.UserRepository;
+import jakarta.annotation.PreDestroy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class JudgeWorkerService {
@@ -23,6 +29,15 @@ public class JudgeWorkerService {
     private final UserRepository userRepository;
     private final SandboxExecutor sandboxExecutor;
     private final SimpMessagingTemplate messagingTemplate;
+    private final JudgeConcurrencyManager concurrencyManager;
+
+    // Concurrency: Fixed thread pool executing judging tasks in parallel
+    private final ExecutorService judgeThreadPool = Executors.newFixedThreadPool(4, r -> {
+        Thread thread = new Thread(r);
+        thread.setName("Judge-Worker-Thread-" + thread.getId());
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public JudgeWorkerService(
             JudgeQueueService queueService,
@@ -30,7 +45,8 @@ public class JudgeWorkerService {
             ProblemRepository problemRepository,
             UserRepository userRepository,
             SandboxExecutor sandboxExecutor,
-            SimpMessagingTemplate messagingTemplate
+            SimpMessagingTemplate messagingTemplate,
+            JudgeConcurrencyManager concurrencyManager
     ) {
         this.queueService = queueService;
         this.submissionRepository = submissionRepository;
@@ -38,20 +54,22 @@ public class JudgeWorkerService {
         this.userRepository = userRepository;
         this.sandboxExecutor = sandboxExecutor;
         this.messagingTemplate = messagingTemplate;
+        this.concurrencyManager = concurrencyManager;
     }
 
     /**
-     * Continuous background polling worker for Redis submission queue
+     * Polling daemon: dequeues submission tasks from Redis and dispatches them
+     * to worker threads in the ExecutorService pool.
      */
     @Scheduled(fixedDelay = 200)
     public void processQueue() {
         try {
             String submissionId = queueService.dequeueSubmission(Duration.ofMillis(200));
             if (submissionId != null) {
-                judgeSubmission(submissionId);
+                judgeThreadPool.submit(() -> judgeSubmission(submissionId));
             }
         } catch (Exception e) {
-            // Queue polling error or connection idle
+            // Queue polling or connection idle
         }
     }
 
@@ -60,24 +78,26 @@ public class JudgeWorkerService {
         Submission submission = submissionRepository.findById(submissionId).orElse(null);
         if (submission == null) return;
 
+        concurrencyManager.registerExecutionStart();
+        long maxRuntime = 0;
+        Problem problem = submission.getProblem();
+
         try {
-            // Step 1: Mark Compiling & Broadcast
-            submission.setStatus("COMPILING");
+            // Step 1: Mark Compiling & Broadcast via WebSocket
+            submission.setStatus(SubmissionStatus.COMPILING);
             submissionRepository.save(submission);
             broadcastStatus(submission);
 
-            Problem problem = submission.getProblem();
             List<TestCase> testCases = problem.getTestCases();
             submission.setTotalTests(testCases.size());
 
             // Step 2: Mark Running
-            submission.setStatus("RUNNING");
+            submission.setStatus(SubmissionStatus.RUNNING);
             submissionRepository.save(submission);
             broadcastStatus(submission);
 
-            long maxRuntime = 0;
             int passedCount = 0;
-            String finalVerdict = "ACCEPTED";
+            Verdict finalVerdict = Verdict.ACCEPTED;
 
             for (TestCase tc : testCases) {
                 SandboxExecutor.ExecutionResult res = sandboxExecutor.execute(
@@ -91,12 +111,12 @@ public class JudgeWorkerService {
                 if (res.durationMs > maxRuntime) maxRuntime = res.durationMs;
 
                 if (res.timedOut) {
-                    finalVerdict = "TIME_LIMIT_EXCEEDED";
+                    finalVerdict = Verdict.TIME_LIMIT_EXCEEDED;
                     break;
                 }
 
                 if (res.exitCode != 0) {
-                    finalVerdict = "RUNTIME_ERROR";
+                    finalVerdict = Verdict.RUNTIME_ERROR;
                     submission.setRuntimeError(res.stderr);
                     break;
                 }
@@ -105,13 +125,13 @@ public class JudgeWorkerService {
                 if (normalize(res.stdout).equals(normalize(tc.getExpectedOutput()))) {
                     passedCount++;
                 } else {
-                    finalVerdict = "WRONG_ANSWER";
+                    finalVerdict = Verdict.WRONG_ANSWER;
                     break;
                 }
             }
 
             // Step 3: Finalize Verdict
-            submission.setStatus("COMPLETED");
+            submission.setStatus(SubmissionStatus.COMPLETED);
             submission.setVerdict(finalVerdict);
             submission.setPassedTests(passedCount);
             submission.setRuntimeMs((int) maxRuntime);
@@ -122,7 +142,7 @@ public class JudgeWorkerService {
 
             // Update problem & user stats
             problem.setTotalSubmissions(problem.getTotalSubmissions() + 1);
-            if ("ACCEPTED".equals(finalVerdict)) {
+            if (finalVerdict == Verdict.ACCEPTED) {
                 problem.setTotalAccepted(problem.getTotalAccepted() + 1);
             }
             if (problem.getTotalSubmissions() > 0) {
@@ -131,11 +151,26 @@ public class JudgeWorkerService {
             problemRepository.save(problem);
 
         } catch (Exception e) {
-            submission.setStatus("COMPLETED");
-            submission.setVerdict("RUNTIME_ERROR");
+            submission.setStatus(SubmissionStatus.COMPLETED);
+            submission.setVerdict(Verdict.RUNTIME_ERROR);
             submission.setRuntimeError(e.getMessage());
             submissionRepository.save(submission);
             broadcastStatus(submission);
+        } finally {
+            concurrencyManager.recordExecutionCompletion(problem != null ? problem.getId() : null, maxRuntime);
+        }
+    }
+
+    @PreDestroy
+    public void shutdownPool() {
+        judgeThreadPool.shutdown();
+        try {
+            if (!judgeThreadPool.awaitTermination(3, TimeUnit.SECONDS)) {
+                judgeThreadPool.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            judgeThreadPool.shutdownNow();
+            Thread.currentThread().interrupt();
         }
     }
 

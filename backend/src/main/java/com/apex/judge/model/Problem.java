@@ -18,8 +18,9 @@ public class Problem {
     @Column(nullable = false, length = 200)
     private String title;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String difficulty; // "EASY", "MEDIUM", "HARD"
+    private Difficulty difficulty = Difficulty.MEDIUM;
 
     @Column(nullable = false)
     private String tags; // Comma separated
@@ -70,8 +71,8 @@ public class Problem {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public String getDifficulty() { return difficulty; }
-    public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
+    public Difficulty getDifficulty() { return difficulty; }
+    public void setDifficulty(Difficulty difficulty) { this.difficulty = difficulty; }
 
     public String getTags() { return tags; }
     public void setTags(String tags) { this.tags = tags; }
