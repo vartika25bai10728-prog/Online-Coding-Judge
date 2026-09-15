@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - ApexJudge</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <main class="content" style="display: flex; align-items: center; justify-content: center;">
+    <div style="width: 100%; max-width: 500px; margin: 0 auto; padding: 2rem; text-align: center;">
+      
+      <div class="card">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem; color: var(--warning);">&#9888;</div>
+        <h1 style="font-size: 1.75rem; font-weight: 800;">Notice / Error</h1>
+        
+        <p style="color: var(--text-secondary); margin: 1rem 0;" th:text="${message != null ? message : 'The requested resource could not be found or an unexpected error occurred.'}">
+          An error occurred while processing your request.
+        </p>
+
+        <div style="margin-top: 1.5rem;">
+          <a href="/dashboard" class="btn btn-primary">Return to Dashboard</a>
+          <a href="/problems" class="btn btn-outline" style="margin-left: 0.5rem;">Browse Problems</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

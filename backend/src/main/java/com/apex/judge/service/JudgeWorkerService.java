@@ -30,6 +30,7 @@ public class JudgeWorkerService {
     private final SandboxExecutor sandboxExecutor;
     private final SimpMessagingTemplate messagingTemplate;
     private final JudgeConcurrencyManager concurrencyManager;
+    private final com.apex.judge.service.strategy.JudgeStrategy judgeStrategy;
 
     // Concurrency: Fixed thread pool executing judging tasks in parallel
     private final ExecutorService judgeThreadPool = Executors.newFixedThreadPool(4, r -> {
@@ -46,7 +47,8 @@ public class JudgeWorkerService {
             UserRepository userRepository,
             SandboxExecutor sandboxExecutor,
             SimpMessagingTemplate messagingTemplate,
-            JudgeConcurrencyManager concurrencyManager
+            JudgeConcurrencyManager concurrencyManager,
+            com.apex.judge.service.strategy.JudgeStrategy judgeStrategy
     ) {
         this.queueService = queueService;
         this.submissionRepository = submissionRepository;
@@ -55,6 +57,7 @@ public class JudgeWorkerService {
         this.sandboxExecutor = sandboxExecutor;
         this.messagingTemplate = messagingTemplate;
         this.concurrencyManager = concurrencyManager;
+        this.judgeStrategy = judgeStrategy;
     }
 
     /**
@@ -110,22 +113,14 @@ public class JudgeWorkerService {
 
                 if (res.durationMs > maxRuntime) maxRuntime = res.durationMs;
 
-                if (res.timedOut) {
-                    finalVerdict = Verdict.TIME_LIMIT_EXCEEDED;
-                    break;
-                }
-
-                if (res.exitCode != 0) {
-                    finalVerdict = Verdict.RUNTIME_ERROR;
-                    submission.setRuntimeError(res.stderr);
-                    break;
-                }
-
-                // Normalize output check
-                if (normalize(res.stdout).equals(normalize(tc.getExpectedOutput()))) {
+                Verdict testVerdict = judgeStrategy.evaluate(tc, res);
+                if (testVerdict == Verdict.ACCEPTED) {
                     passedCount++;
                 } else {
-                    finalVerdict = Verdict.WRONG_ANSWER;
+                    finalVerdict = testVerdict;
+                    if (res.stderr != null && !res.stderr.isEmpty()) {
+                        submission.setRuntimeError(res.stderr);
+                    }
                     break;
                 }
             }

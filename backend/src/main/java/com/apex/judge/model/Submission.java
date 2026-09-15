@@ -47,6 +47,17 @@ public class Submission {
 
     public Submission() {}
 
+    public Submission(String id, User user, Problem problem, String language, String code, SubmissionStatus status) {
+        this.id = id;
+        this.user = user;
+        this.problem = problem;
+        this.language = language;
+        this.code = code;
+        this.status = status;
+        this.verdict = Verdict.PENDING;
+        this.createdAt = Instant.now();
+    }
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 

@@ -1,11 +1,15 @@
 package com.apex.judge.service;
 
+import com.apex.judge.service.executor.CodeExecutor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -20,6 +24,17 @@ public class SandboxExecutor {
         public long memoryMb;
     }
 
+    private final List<CodeExecutor> codeExecutors;
+
+    @Autowired
+    public SandboxExecutor(List<CodeExecutor> codeExecutors) {
+        this.codeExecutors = codeExecutors != null ? codeExecutors : new ArrayList<>();
+    }
+
+    public SandboxExecutor() {
+        this.codeExecutors = new ArrayList<>();
+    }
+
     /**
      * Overloaded execute method with default limits (2000ms time limit, 256MB memory limit).
      */
@@ -32,6 +47,15 @@ public class SandboxExecutor {
      * and isolated process timeouts.
      */
     public ExecutionResult execute(String language, String code, String input, int timeLimitMs, int memoryLimitMb) {
+        // First check polymorphic CodeExecutor implementations
+        if (language != null && !codeExecutors.isEmpty()) {
+            for (CodeExecutor executor : codeExecutors) {
+                if (executor.supportsLanguage(language)) {
+                    return executor.execute(code, input, timeLimitMs, memoryLimitMb);
+                }
+            }
+        }
+
         ExecutionResult result = new ExecutionResult();
         Path tempDir = null;
 
