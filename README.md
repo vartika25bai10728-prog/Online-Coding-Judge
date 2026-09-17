@@ -10,20 +10,20 @@ The project is architected with clear role boundaries:
 
 | Layer | Technology | Primary Role in the Architecture |
 | :--- | :--- | :--- |
-| **Frontend UI** | **React / TypeScript** | **Temporary AI Studio development UI** (used exclusively for live preview, rapid interaction testing, and AI Studio development environment compliance). |
+| **Web UI & Workspace** | **Java Thymeleaf & Web Client** | **Modern Online Judge Interface**. Full problem solving workspace with Monaco editor, real-time submission verdicts, testcase runner, and leaderboard. |
 | **Core Application / Backend** | **Java 21 + Spring Boot 3** | **The true core application logic and backend**. Houses all REST controllers, Spring Security & JWT filters, domain models, Spring Data JPA repositories, Redis FIFO queues, and judge orchestration. |
-| **Sandbox Execution** | **Docker / Isolated Containers** | **Isolated code execution**. Provides containerized sandboxes with cgroups memory caps and execution timeouts to safely run untrusted user submissions (Java, Python, C++, Node.js). |
+| **Sandbox Execution** | **Java / Docker Isolated Execution** | **Isolated code execution**. Provides containerized sandboxes with cgroups memory caps and execution timeouts to safely run and evaluate untrusted user submissions (Java 21 as primary language). |
 | **Data Persistence** | **PostgreSQL 16 + Flyway** | **Persistent application data**. Stores ACID-compliant user accounts, problem descriptions, test cases, submission histories, and contest scoreboards versioned by Flyway database migrations. |
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ React / TypeScript (Temporary AI Studio Development UI)     │
+│ Java Web UI & Interactive Problem Workspace                 │
 │ - Monaco Editor, Problem Explorer, Submissions Stream       │
 └───────────────────────────────┬─────────────────────────────┘
                                 │ HTTP / REST / JWT (/api/*)
                                 ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ Java 21 + Spring Boot 3 (Core Application / Backend)        │
+│ Java 21 + Spring Boot 3 (Core Application & Judge Engine)    │
 │ ├── Spring MVC REST Controllers                             │
 │ ├── Spring Security + Stateless JWT Filter                  │
 │ ├── Spring Data JPA & Hibernate Entities                    │

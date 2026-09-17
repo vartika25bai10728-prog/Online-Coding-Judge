@@ -62,13 +62,18 @@ export const MonacoCodeEditor: React.FC<MonacoCodeEditorProps> = ({
             id="editor-language-select"
             value={language}
             onChange={(e) => onLanguageChange(e.target.value as SupportedLanguage)}
-            className="bg-slate-900 border border-slate-700 text-slate-200 rounded px-2.5 py-1 text-xs font-mono focus:outline-none focus:border-indigo-500 transition-colors"
+            className="bg-slate-900 border border-indigo-500/50 text-indigo-300 font-medium rounded px-2.5 py-1 text-xs font-mono focus:outline-none focus:border-indigo-400 transition-colors"
           >
+            <option value="java">Java 21 (Major)</option>
             <option value="python">Python 3.11</option>
             <option value="javascript">JavaScript (Node.js)</option>
-            <option value="java">Java 21</option>
             <option value="cpp">C++ (GCC 14)</option>
           </select>
+          {language === 'java' && (
+            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-indigo-950 text-indigo-300 border border-indigo-800/80">
+              Primary
+            </span>
+          )}
         </div>
 
         {/* Editor Controls */}

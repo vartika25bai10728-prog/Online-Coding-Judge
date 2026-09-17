@@ -1,0 +1,5 @@
+/app/applet/backend/src/test/java/com/apex/judge/config/JwtServiceTest.java
+/app/applet/backend/src/test/java/com/apex/judge/model/EnumModelTest.java
+/app/applet/backend/src/test/java/com/apex/judge/service/JudgeConcurrencyManagerTest.java
+/app/applet/backend/src/test/java/com/apex/judge/service/JudgeOopArchitectureTest.java
+/app/applet/backend/src/test/java/com/apex/judge/service/SandboxExecutorTest.java

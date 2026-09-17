@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${problem.title} + ' - ApexJudge'">Solve Problem - ApexJudge</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <main class="content">
+    <div class="container">
+      
+      <!-- Breadcrumb & Title Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <a href="/problems" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">&larr; Back to Problem Archive</a>
+          <h1 style="font-size: 1.85rem; font-weight: 800; margin-top: 0.25rem;" th:text="${problem.title}">Two Sum</h1>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <span th:class="'badge badge-' + ${#strings.toLowerCase(problem.difficulty.name())}" th:text="${problem.difficulty}">EASY</span>
+          <span class="badge" style="background: var(--bg-muted); color: var(--text-secondary);" th:text="${problem.timeLimitMs} + ' ms Limit'">2000 ms</span>
+          <span class="badge" style="background: var(--bg-muted); color: var(--text-secondary);" th:text="${problem.memoryLimitMb} + ' MB RAM'">256 MB</span>
+        </div>
+      </div>
+
+      <!-- Problem Split View -->
+      <div class="problem-grid">
+        
+        <!-- Left: Problem Description & Test Cases -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Problem Statement</h2>
+            </div>
+            <div style="color: var(--text-primary); line-height: 1.7; white-space: pre-line;" th:text="${problem.description}">
+              Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+            </div>
+
+            <div th:if="${problem.inputFormat != null}" style="margin-top: 1.5rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Input Format</h3>
+              <div style="color: var(--text-muted); font-size: 0.9rem;" th:text="${problem.inputFormat}">Line 1 contains...</div>
+            </div>
+
+            <div th:if="${problem.outputFormat != null}" style="margin-top: 1rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Output Format</h3>
+              <div style="color: var(--text-muted); font-size: 0.9rem;" th:text="${problem.outputFormat}">Print the required output...</div>
+            </div>
+
+            <div th:if="${problem.constraints != null}" style="margin-top: 1rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">Constraints</h3>
+              <div class="code-block" style="font-size: 0.825rem;" th:text="${problem.constraints}">1 <= n <= 10^5</div>
+            </div>
+          </div>
+
+          <!-- Sample Test Cases -->
+          <div class="card" th:if="${not #lists.isEmpty(testCases)}">
+            <div class="card-header">
+              <h2 class="card-title">Sample Test Cases</h2>
+            </div>
+            <div th:each="tc, iter : ${testCases}" th:if="${tc.isSample}" style="margin-bottom: 1.25rem;">
+              <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;" th:text="'Sample Case #' + ${iter.count}">Sample #1</div>
+              
+              <div style="font-size: 0.775rem; color: var(--text-muted); text-transform: uppercase;">Input</div>
+              <div class="code-block" th:text="${tc.input}">4
+2 7 11 15
+9</div>
+
+              <div style="font-size: 0.775rem; color: var(--text-muted); text-transform: uppercase;">Expected Output</div>
+              <div class="code-block" th:text="${tc.expectedOutput}">0 1</div>
+
+              <div th:if="${tc.explanation != null}" style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.25rem;">
+                <span style="font-weight: 600;">Explanation:</span> <span th:text="${tc.explanation}">Indices 0 and 1 sum to 9</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Code Editor and Submission -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Submit Solution</h2>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Process Isolation Sandbox</span>
+            </div>
+
+            <form th:action="@{'/problems/' + ${problem.slug} + '/submit'}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+              <div class="form-group">
+                <label class="form-label" for="languageSelect">Programming Language</label>
+                <select id="languageSelect" name="language" class="form-select" onchange="updateTemplate()">
+                  <option value="java" selected>Java 21 (OpenJDK)</option>
+                  <option value="python">Python 3.11</option>
+                  <option value="cpp">C++ 17 (g++)</option>
+                  <option value="javascript">JavaScript (Node.js)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                  <label class="form-label" style="margin-bottom: 0;" for="codeEditor">Source Code</label>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Class must be named Solution</span>
+                </div>
+                <textarea id="codeEditor" name="code" class="code-editor-area" spellcheck="false" required>import java.util.*;
+import java.io.*;
+
+public class Solution {
+    public static void main(String[] args) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        // Complete solution logic here
+    }
+}</textarea>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="resetTemplate()">Reset Template</button>
+                <button type="submit" class="btn btn-primary btn-lg">Submit for Evaluation &rarr;</button>
+              </div>
+
+            </form>
+          </div>
+
+          <!-- Fastest Solutions (Explicit JPQL Result) -->
+          <div class="card" th:if="${not #lists.isEmpty(fastestSubmissions)}">
+            <div class="card-header">
+              <h2 class="card-title">Benchmark Speed Records</h2>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">JPQL: findFastestSubmissionsForProblem</span>
+            </div>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Coder</th>
+                    <th>Lang</th>
+                    <th>Runtime</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="fast : ${fastestSubmissions}">
+                    <td th:text="${fast.user != null ? fast.user.username : 'Anonymous'}">coder</td>
+                    <td th:text="${#strings.toUpperCase(fast.language)}">JAVA</td>
+                    <td th:text="${fast.runtimeMs} + ' ms'" style="color: var(--success); font-weight: 600;">12 ms</td>
+                    <td><span class="badge badge-accepted">ACCEPTED</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+  <script>
+    const templates = {
+      java: `import java.util.*;
+import java.io.*;
+
+public class Solution {
+    public static void main(String[] args) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        // Your algorithmic solution here
+    }
+}`,
+      python: `import sys
+
+def main():
+    lines = sys.stdin.read().split()
+    if not lines:
+        return
+    # Your algorithmic solution here
+
+if __name__ == '__main__':
+    main()`,
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    // Your algorithmic solution here
+    return 0;
+}`,
+      javascript: `const fs = require('fs');
+
+function main() {
+    const input = fs.readFileSync(0, 'utf-8');
+    // Your algorithmic solution here
+}
+
+main();`
+    };
+
+    function updateTemplate() {
+      const lang = document.getElementById('languageSelect').value;
+      if (templates[lang]) {
+        document.getElementById('codeEditor').value = templates[lang];
+      }
+    }
+
+    function resetTemplate() {
+      updateTemplate();
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<nav th:fragment="navbar" class="navbar">
+  <div class="container nav-container">
+    <a href="/dashboard" class="brand">
+      <span>ApexJudge</span>
+      <span class="brand-badge">Java 21</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+      <li><a href="/problems" class="nav-link">Problems</a></li>
+      <li><a href="/submissions" class="nav-link">Submissions</a></li>
+      <li><a href="/leaderboard" class="nav-link">Leaderboard</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <!-- Authenticated User Display -->
+      <div sec:authorize="isAuthenticated()" style="display: flex; align-items: center; gap: 1rem;">
+        <a href="/profile" class="btn btn-outline btn-sm">
+          <span sec:authentication="name">Coder</span>
+        </a>
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="submit" class="btn btn-outline btn-sm">Sign Out</button>
+        </form>
+      </div>
+
+      <!-- Guest / Anonymous Display -->
+      <div sec:authorize="!isAuthenticated()" style="display: flex; align-items: center; gap: 0.75rem;">
+        <a href="/login" class="btn btn-outline btn-sm">Sign In</a>
+        <a href="/register" class="btn btn-primary btn-sm">Register</a>
+      </div>
+    </div>
+  </div>
+</nav>
+</html>

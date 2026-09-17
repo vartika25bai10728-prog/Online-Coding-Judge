@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submission Inspection - ApexJudge</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <main class="content">
+    <div class="container">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <a href="/submissions" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">&larr; Back to Submissions Feed</a>
+          <h1 style="font-size: 1.85rem; font-weight: 800; margin-top: 0.25rem;">
+            Submission Result: <span th:text="${submission.problem.title}">Problem</span>
+          </h1>
+        </div>
+        <div>
+          <a th:href="@{'/problems/' + ${submission.problem.slug}}" class="btn btn-primary">Re-Attempt Challenge &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Verdict Banner Card -->
+      <div class="card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Final Judge Evaluation</span>
+          <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.35rem;">
+            <span th:if="${submission.verdict != null}" 
+                  th:class="'badge badge-' + ${#strings.toLowerCase(submission.verdict.name())}" 
+                  style="font-size: 1.15rem; padding: 0.4rem 1rem;" 
+                  th:text="${submission.verdict}">ACCEPTED</span>
+            <span th:if="${submission.verdict == null}" 
+                  class="badge badge-pending" 
+                  style="font-size: 1.15rem; padding: 0.4rem 1rem;" 
+                  th:text="${submission.status}">PENDING</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 2rem;">
+          <div>
+            <div class="stat-label">Tests Passed</div>
+            <div style="font-size: 1.25rem; font-weight: 700;" th:text="${submission.passedTests} + ' / ' + ${submission.totalTests}">3 / 3</div>
+          </div>
+          <div>
+            <div class="stat-label">Execution Time</div>
+            <div style="font-size: 1.25rem; font-weight: 700; color: var(--success);" th:text="${submission.runtimeMs != null ? submission.runtimeMs + ' ms' : '--'}">14 ms</div>
+          </div>
+          <div>
+            <div class="stat-label">Memory</div>
+            <div style="font-size: 1.25rem; font-weight: 700;" th:text="${submission.memoryMb != null ? submission.memoryMb + ' MB' : '--'}">32 MB</div>
+          </div>
+          <div>
+            <div class="stat-label">Language</div>
+            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);" th:text="${#strings.toUpperCase(submission.language)}">JAVA</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Logs (if any) -->
+      <div class="card" th:if="${submission.runtimeError != null and !#strings.isEmpty(submission.runtimeError)}" style="border-color: rgba(239, 68, 68, 0.4);">
+        <div class="card-header">
+          <h2 class="card-title" style="color: #fca5a5;">Compiler / Runtime Diagnostics</h2>
+        </div>
+        <div class="code-block" style="color: #fca5a5; background: #1c0f13;" th:text="${submission.runtimeError}">
+          Compilation error details
+        </div>
+      </div>
+
+      <!-- Source Code Box -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Submitted Solution Code</h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" th:text="'UUID: ' + ${submission.id}">id</span>
+        </div>
+        <pre class="code-block" style="min-height: 250px; font-size: 0.9rem;" th:text="${submission.code}">// Code content here</pre>
+      </div>
+
+    </div>
+  </main>
+
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

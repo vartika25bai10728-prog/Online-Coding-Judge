@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coding Problems - ApexJudge</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <main class="content">
+    <div class="container">
+      
+      <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.025em;">Algorithmic Problem Archive</h1>
+        <p style="color: var(--text-secondary); margin-top: 0.25rem;">
+          Sharpen your programming skills across algorithmic paradigms and verified test suites.
+        </p>
+      </div>
+
+      <!-- Filters Form -->
+      <div class="card" style="padding: 1.25rem;">
+        <form method="get" th:action="@{/problems}" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;">
+          
+          <div style="flex: 1; min-width: 240px;">
+            <label class="form-label">Search Challenges</label>
+            <input type="text" name="search" th:value="${searchQuery}" class="form-input" placeholder="Search title or tag (e.g. array, graph)...">
+          </div>
+
+          <div style="width: 180px;">
+            <label class="form-label">Difficulty</label>
+            <select name="difficulty" class="form-select">
+              <option value="ALL" th:selected="${selectedDifficulty == 'ALL'}">All Difficulties</option>
+              <option th:each="d : ${difficulties}" 
+                      th:value="${d.name()}" 
+                      th:text="${d.name()}" 
+                      th:selected="${selectedDifficulty == d.name()}">EASY</option>
+            </select>
+          </div>
+
+          <div>
+            <button type="submit" class="btn btn-primary" style="height: 42px;">Filter Problems</button>
+            <a th:href="@{/problems}" class="btn btn-outline" style="height: 42px; margin-left: 0.5rem;">Reset</a>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Problems Table -->
+      <div class="card">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th>Problem Title</th>
+                <th>Difficulty</th>
+                <th>Tags</th>
+                <th>Acceptance Rate</th>
+                <th>Total Submissions</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${#lists.isEmpty(problems)}">
+                <td colspan="7" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                  No problems matched the selected search criteria.
+                </td>
+              </tr>
+              <tr th:each="prob, stat : ${problems}">
+                <td th:text="${stat.count}" style="color: var(--text-muted); font-family: var(--code-font);">1</td>
+                <td>
+                  <a th:href="@{'/problems/' + ${prob.slug}}" style="color: #fff; font-weight: 600; text-decoration: none;" th:text="${prob.title}">Two Sum</a>
+                </td>
+                <td>
+                  <span th:class="'badge badge-' + ${#strings.toLowerCase(prob.difficulty.name())}" th:text="${prob.difficulty}">EASY</span>
+                </td>
+                <td>
+                  <span th:each="tag : ${#strings.arraySplit(prob.tags, ',')}" 
+                        style="display: inline-block; background-color: var(--bg-muted); color: var(--text-secondary); font-size: 0.75rem; padding: 0.15rem 0.45rem; border-radius: 4px; margin-right: 0.35rem;" 
+                        th:text="${#strings.trim(tag)}">arrays</span>
+                </td>
+                <td th:text="${prob.totalSubmissions != null and prob.totalSubmissions > 0 ? #numbers.formatDecimal((prob.totalAccepted * 100.0 / prob.totalSubmissions), 1, 1) + '%' : '0.0%'}">0.0%</td>
+                <td th:text="${prob.totalSubmissions}">0</td>
+                <td style="text-align: right;">
+                  <a th:href="@{'/problems/' + ${prob.slug}}" class="btn btn-outline btn-sm">Solve Challenge &rarr;</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>
