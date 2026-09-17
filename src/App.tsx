@@ -12,6 +12,7 @@ import { LeaderboardPage } from './pages/LeaderboardPage';
 import { DiscussionsPage } from './pages/DiscussionsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export function AppContent() {
   const [currentPage, setCurrentPage] = useState<string>('landing');
@@ -81,8 +82,10 @@ export function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

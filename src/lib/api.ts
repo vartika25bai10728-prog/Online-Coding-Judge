@@ -1,4 +1,5 @@
 import { User, Problem, Submission, Contest, ContestLeaderboardEntry, Discussion, Comment, SupportedLanguage } from '../types';
+import { staticStore } from './staticStore';
 
 const API_BASE = '/api';
 
@@ -47,21 +48,42 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   return res.json();
 }
 
+// Wrapper that falls back to staticStore when deployed on static hosts like GitHub Pages
+async function tryApiOrFallback<T>(apiCall: () => Promise<T>, fallbackCall: () => T | Promise<T>): Promise<T> {
+  try {
+    return await apiCall();
+  } catch (err: any) {
+    // If backend returned 404/500/network error (typical on static GitHub Pages hosting where no Node server runs)
+    console.warn('[Apex Judge] Backend unavailable or static deployment detected. Using client-side storage engine.');
+    return await fallbackCall();
+  }
+}
+
 export const api = {
   // Auth
   login: (identifier: string, password: string) =>
-    request<{ user: User; accessToken: string; refreshToken: string }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ identifier, password })
-    }),
+    tryApiOrFallback(
+      () => request<{ user: User; accessToken: string; refreshToken: string }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ identifier, password })
+      }),
+      () => staticStore.login(identifier)
+    ),
 
   register: (username: string, email: string, password: string) =>
-    request<{ user: User; accessToken: string; refreshToken: string }>('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ username, email, password })
-    }),
+    tryApiOrFallback(
+      () => request<{ user: User; accessToken: string; refreshToken: string }>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ username, email, password })
+      }),
+      () => staticStore.register(username, email)
+    ),
 
-  getCurrentUser: () => request<{ user: User }>('/auth/me'),
+  getCurrentUser: () =>
+    tryApiOrFallback(
+      () => request<{ user: User }>('/auth/me'),
+      () => staticStore.getCurrentUser()
+    ),
 
   // Problems
   getProblems: (params?: { search?: string; difficulty?: string; tag?: string; page?: number; limit?: number; sort?: string }) => {
@@ -72,77 +94,142 @@ export const api = {
     if (params?.page) query.set('page', params.page.toString());
     if (params?.limit) query.set('limit', params.limit.toString());
     if (params?.sort) query.set('sort', params.sort);
-    return request<{ problems: Problem[]; total: number; page: number; limit: number; totalPages: number }>(`/problems?${query.toString()}`);
+    return tryApiOrFallback(
+      () => request<{ problems: Problem[]; total: number; page: number; limit: number; totalPages: number }>(`/problems?${query.toString()}`),
+      () => staticStore.getProblems(params)
+    );
   },
 
-  getProblemBySlug: (slug: string) => request<Problem>(`/problems/${slug}`),
+  getProblemBySlug: (slug: string) =>
+    tryApiOrFallback(
+      () => request<Problem>(`/problems/${slug}`),
+      () => staticStore.getProblemBySlug(slug)
+    ),
 
   // Judge Execution
   runCode: (problemId: string, language: SupportedLanguage, code: string, customTestCases?: { input: string; expectedOutput?: string }[]) =>
-    request<{ status: 'PASSED' | 'FAILED'; runtimeMs: number; results: any[] }>('/judge/run', {
-      method: 'POST',
-      body: JSON.stringify({ problemId, language, code, customTestCases })
-    }),
+    tryApiOrFallback(
+      () => request<{ status: 'PASSED' | 'FAILED'; runtimeMs: number; results: any[] }>('/judge/run', {
+        method: 'POST',
+        body: JSON.stringify({ problemId, language, code, customTestCases })
+      }),
+      () => staticStore.runCode(problemId, language, code, customTestCases)
+    ),
 
   submitCode: (problemId: string, language: SupportedLanguage, code: string) =>
-    request<Submission>('/submissions', {
-      method: 'POST',
-      body: JSON.stringify({ problemId, language, code })
-    }),
+    tryApiOrFallback(
+      () => request<Submission>('/submissions', {
+        method: 'POST',
+        body: JSON.stringify({ problemId, language, code })
+      }),
+      () => staticStore.submitCode(problemId, language, code)
+    ),
 
-  getSubmission: (id: string) => request<Submission>(`/submissions/${id}`),
+  getSubmission: (id: string) =>
+    tryApiOrFallback(
+      () => request<Submission>(`/submissions/${id}`),
+      () => staticStore.getSubmission(id)
+    ),
 
   getSubmissions: (params?: { problemId?: string; userId?: string; limit?: number }) => {
     const query = new URLSearchParams();
     if (params?.problemId) query.set('problemId', params.problemId);
     if (params?.userId) query.set('userId', params.userId);
     if (params?.limit) query.set('limit', params.limit.toString());
-    return request<Submission[]>(`/submissions?${query.toString()}`);
+    return tryApiOrFallback(
+      () => request<Submission[]>(`/submissions?${query.toString()}`),
+      () => staticStore.getSubmissions(params)
+    );
   },
 
   // Contests
-  getContests: () => request<Contest[]>('/contests'),
-  getContest: (id: string) => request<Contest>(`/contests/${id}`),
-  getContestLeaderboard: (id: string) => request<ContestLeaderboardEntry[]>(`/contests/${id}/leaderboard`),
+  getContests: () =>
+    tryApiOrFallback(
+      () => request<Contest[]>('/contests'),
+      () => staticStore.getContests()
+    ),
+  getContest: (id: string) =>
+    tryApiOrFallback(
+      () => request<Contest>(`/contests/${id}`),
+      () => staticStore.getContest(id)
+    ),
+  getContestLeaderboard: (id: string) =>
+    tryApiOrFallback(
+      () => request<ContestLeaderboardEntry[]>(`/contests/${id}/leaderboard`),
+      () => staticStore.getContestLeaderboard(id)
+    ),
 
   // Leaderboard
-  getGlobalLeaderboard: () => request<any[]>('/leaderboard'),
+  getGlobalLeaderboard: () =>
+    tryApiOrFallback(
+      () => request<any[]>('/leaderboard'),
+      () => staticStore.getGlobalLeaderboard()
+    ),
 
   // User Profile
-  getUserProfile: (username: string) => request<{ user: User; stats: any }>(`/users/${username}`),
+  getUserProfile: (username: string) =>
+    tryApiOrFallback(
+      () => request<{ user: User; stats: any }>(`/users/${username}`),
+      () => staticStore.getUserProfile(username)
+    ),
 
   // Discussions
   getDiscussions: (problemId?: string) => {
     const q = problemId ? `?problemId=${encodeURIComponent(problemId)}` : '';
-    return request<Discussion[]>(`/discussions${q}`);
+    return tryApiOrFallback(
+      () => request<Discussion[]>(`/discussions${q}`),
+      () => staticStore.getDiscussions(problemId)
+    );
   },
-  getDiscussion: (id: string) => request<{ discussion: Discussion; comments: Comment[] }>(`/discussions/${id}`),
+  getDiscussion: (id: string) =>
+    tryApiOrFallback(
+      () => request<{ discussion: Discussion; comments: Comment[] }>(`/discussions/${id}`),
+      () => staticStore.getDiscussion(id)
+    ),
   createDiscussion: (data: { problemId?: string; title: string; content: string; tags?: string[] }) =>
-    request<Discussion>('/discussions', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    }),
+    tryApiOrFallback(
+      () => request<Discussion>('/discussions', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }),
+      () => staticStore.createDiscussion(data)
+    ),
   voteDiscussion: (id: string) =>
-    request<Discussion>(`/discussions/${id}/vote`, { method: 'POST' }),
+    tryApiOrFallback(
+      () => request<Discussion>(`/discussions/${id}/vote`, { method: 'POST' }),
+      () => staticStore.voteDiscussion(id)
+    ),
   addComment: (discussionId: string, content: string) =>
-    request<Comment>(`/discussions/${discussionId}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ content })
-    }),
+    tryApiOrFallback(
+      () => request<Comment>(`/discussions/${discussionId}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({ content })
+      }),
+      () => staticStore.addComment(discussionId, content)
+    ),
 
   // Admin
   createProblem: (problemData: any) =>
-    request<Problem>('/admin/problems', {
-      method: 'POST',
-      body: JSON.stringify(problemData)
-    }),
+    tryApiOrFallback(
+      () => request<Problem>('/admin/problems', {
+        method: 'POST',
+        body: JSON.stringify(problemData)
+      }),
+      () => staticStore.createProblem(problemData)
+    ),
   updateProblem: (id: string, updates: any) =>
-    request<Problem>(`/admin/problems/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates)
-    }),
+    tryApiOrFallback(
+      () => request<Problem>(`/admin/problems/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      }),
+      () => staticStore.updateProblem(id, updates)
+    ),
   deleteProblem: (id: string) =>
-    request<{ success: boolean }>(`/admin/problems/${id}`, {
-      method: 'DELETE'
-    })
+    tryApiOrFallback(
+      () => request<{ success: boolean }>(`/admin/problems/${id}`, {
+        method: 'DELETE'
+      }),
+      () => staticStore.deleteProblem(id)
+    )
 };

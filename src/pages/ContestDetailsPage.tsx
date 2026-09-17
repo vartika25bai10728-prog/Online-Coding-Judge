@@ -143,7 +143,7 @@ export const ContestDetailsPage: React.FC<ContestDetailsPageProps> = ({ contestI
               {contest.problems.map((p, idx) => (
                 <tr
                   key={p.problemId}
-                  onClick={() => onNavigate('problem', p.slug)}
+                  onClick={() => onNavigate('problem', p.problemId)}
                   className="hover:bg-slate-800/40 transition-colors cursor-pointer group"
                 >
                   <td className="py-4 px-6 font-mono font-bold text-indigo-400">
@@ -159,7 +159,7 @@ export const ContestDetailsPage: React.FC<ContestDetailsPageProps> = ({ contestI
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onNavigate('problem', p.slug);
+                        onNavigate('problem', p.problemId);
                       }}
                       className="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-semibold ml-auto flex items-center gap-1 transition-colors"
                     >
@@ -209,16 +209,16 @@ export const ContestDetailsPage: React.FC<ContestDetailsPageProps> = ({ contestI
                     {row.score}
                   </td>
                   <td className="py-3.5 px-4 text-center text-slate-400">
-                    {row.penalty}m
+                    {row.penaltyMinutes}m
                   </td>
                   {contest.problems.map((p) => {
-                    const status = row.problemStatus[p.problemId];
+                    const status = row.problemScores?.[p.problemId];
                     return (
                       <td key={p.problemId} className="py-3.5 px-4 text-center">
                         {status ? (
                           status.solved ? (
                             <span className="px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 font-bold">
-                              +{status.attempts} ({status.timeMinutes}m)
+                              +{status.attempts} ({status.penaltyMinutes}m)
                             </span>
                           ) : (
                             <span className="px-2 py-0.5 rounded bg-rose-950/80 text-rose-400 border border-rose-800/60">
