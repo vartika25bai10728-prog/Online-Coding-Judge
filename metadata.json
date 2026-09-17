@@ -1,6 +1,6 @@
 {
   "name": "Apex Online Coding Judge",
-  "description": "A simple online coding judge to practice programming problems, run code with test cases, and track submissions.",
+  "description": "A terminal-based coding judge to practice programming problems, run code with test cases, and track submissions.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

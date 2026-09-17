@@ -1,111 +1,45 @@
-# Apex Online Coding Judge
+# Apex Online Judge (Terminal Edition)
 
-A full-stack online coding platform where users can solve programming problems, submit solutions, and get their results.
+A simple terminal-based coding judge made for my first year college mini-project.
+
+## About The Project
+
+This is a terminal website where students can practice basic coding problems like Two Sum, Palindrome Number, Valid Parentheses, Reverse String, and more. 
+
+Instead of heavy frontend or fancy buttons, everything works through terminal commands.
 
 ## Features
 
-* User registration and login
-* Browse and search coding problems
-* Code editor for submissions
-* Code execution and test case evaluation
-* Submission history
-* Java, Python, C++ and Node.js support
-* Docker-based code execution
-* PostgreSQL database
-* Redis-based submission queue
-* JWT authentication
+- Terminal shell interface with command prompt (`student@judge:~$ `)
+- Problem viewer (`view <id>` or `cat <id>`)
+- In-terminal code editor (`solve <id>`)
+- Multi-language support: Python 3, JavaScript, C++, and Java
+- Test case evaluation and runtime measurement
+- Submissions log and student leaderboard
+- Command history using Up/Down arrow keys
 
-## Tech Stack
+## Commands
 
-**Frontend**
+- `help` : Show list of all available commands
+- `problems` or `ls` : List all problems
+- `view <id>` : View a problem description and testcases
+- `solve <id>` : Open code editor for a problem
+- `run` : Run code with test cases
+- `submit` : Submit solution for evaluation
+- `submissions` : View submission history
+- `leaderboard` : View rankings
+- `clear` : Clear terminal screen
+- `about` : Project information
 
-* React
-* TypeScript
-* Vite
-* Monaco Editor
+## How to Run
 
-**Backend**
-
-* Java 21
-* Spring Boot
-* Spring Security
-* Spring Data JPA
-
-**Database & Infrastructure**
-
-* PostgreSQL
-* Redis
-* Docker
-* Flyway
-
-## How It Works
-
-```text
-User
-  ↓
-Frontend
-  ↓
-Spring Boot API
-  ↓
-Redis Queue
-  ↓
-Judge Worker
-  ↓
-Docker Container
-  ↓
-Test Cases
-  ↓
-Result
-```
-
-When a solution is submitted, the backend adds it to the judging queue. A worker processes the submission and runs the code in an isolated environment. The result is then stored and returned to the user.
-
-## Running Locally
-
-### Requirements
-
-* Java 21
-* Maven 3.9+
-* Node.js
-* PostgreSQL
-* Redis
-* Docker
-
-### Backend
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-### Frontend
-
-```bash
-npm install
-npm run dev
-```
-
-### Docker
-
-```bash
-docker compose up --build
-```
-
-## Project Structure
-
-```text
-Online-Coding-Judge/
-├── backend/       # Spring Boot backend
-├── src/           # React frontend
-├── docker-compose.yml
-├── package.json
-└── server.ts
-```
-
-## Status
-
-This project is under development.
-
-## License
-
-For educational use.
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the project:
+   ```bash
+   npm run dev
+   ```
+4. Open `http://localhost:3000` in your browser.
