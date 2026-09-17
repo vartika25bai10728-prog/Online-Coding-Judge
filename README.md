@@ -1,45 +1,45 @@
-# Apex Online Judge (Terminal Edition)
+# Online Coding Judge (Terminal Edition)
 
-A simple terminal-based coding judge made for my first year college mini-project.
+A terminal-based online coding judge built as a 1st year college mini-project for students to practice coding problems.
 
-## About The Project
-
-This is a terminal website where students can practice basic coding problems like Two Sum, Palindrome Number, Valid Parentheses, Reverse String, and more. 
-
-Instead of heavy frontend or fancy buttons, everything works through terminal commands.
+## What is this?
+A simple web terminal that runs in the browser. You type commands to browse problems, write code, run test cases, and submit solutions without any bloated UI.
 
 ## Features
+- Interactive terminal command prompt (`student@judge:~$ `)
+- In-terminal editor buffer to write code
+- Supports Python, JavaScript, C++, and Java
+- Test case checking with pass/fail verdicts and runtimes (ms)
+- Submission history log and student leaderboard
+- Up / Down arrow key command history
 
-- Terminal shell interface with command prompt (`student@judge:~$ `)
-- Problem viewer (`view <id>` or `cat <id>`)
-- In-terminal code editor (`solve <id>`)
-- Multi-language support: Python 3, JavaScript, C++, and Java
-- Test case evaluation and runtime measurement
-- Submissions log and student leaderboard
-- Command history using Up/Down arrow keys
+## Terminal Commands
+| Command | What it does |
+|---|---|
+| `help` | List all available commands |
+| `problems` | List all practice problems |
+| `view <id>` | View problem details and sample testcases (e.g. `view 1`) |
+| `solve <id>` | Open editor for a problem (e.g. `solve 1`) |
+| `run` | Run test cases against your code |
+| `submit` | Submit code and get verdict (ACCEPTED / WRONG ANSWER) |
+| `submissions` | View recent submissions log |
+| `leaderboard` | Show top students |
+| `clear` | Clear terminal screen |
+| `about` | Show project info |
 
-## Commands
+## Practice Problems Included
+1. Two Sum (Easy)
+2. Palindrome Number (Easy)
+3. Valid Parentheses (Easy)
+4. Reverse String (Easy)
+5. Contains Duplicate (Easy)
+6. Fizz Buzz (Easy)
+7. Binary Search (Easy)
+8. Maximum Subarray (Medium)
 
-- `help` : Show list of all available commands
-- `problems` or `ls` : List all problems
-- `view <id>` : View a problem description and testcases
-- `solve <id>` : Open code editor for a problem
-- `run` : Run code with test cases
-- `submit` : Submit solution for evaluation
-- `submissions` : View submission history
-- `leaderboard` : View rankings
-- `clear` : Clear terminal screen
-- `about` : Project information
-
-## How to Run
-
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the project:
-   ```bash
-   npm run dev
-   ```
-4. Open `http://localhost:3000` in your browser.
+## How to Run Locally
+```bash
+npm install
+npm run dev
+```
+Open `http://localhost:3000` in your browser.

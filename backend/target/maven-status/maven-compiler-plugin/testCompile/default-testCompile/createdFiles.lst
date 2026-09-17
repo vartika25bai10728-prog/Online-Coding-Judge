@@ -1,5 +1,0 @@
-com/apex/judge/model/EnumModelTest.class
-com/apex/judge/config/JwtServiceTest.class
-com/apex/judge/service/JudgeConcurrencyManagerTest.class
-com/apex/judge/service/JudgeOopArchitectureTest.class
-com/apex/judge/service/SandboxExecutorTest.class
