@@ -294,17 +294,6 @@ This project demonstrates several core Java concepts:
 * `ProcessBuilder`
 * Object-oriented programming
 
-## Limitations
-
-This is a lightweight educational implementation.
-
-* It currently uses a single test case for each problem.
-* Solutions are submitted as Java source files.
-* There is no database.
-* There is no web interface.
-* There is no user authentication.
-* The judge is designed for local execution.
-
 ## Future Improvements
 
 Possible future improvements include:
@@ -320,12 +309,3 @@ Possible future improvements include:
 * Improved code execution sandboxing
 * A graphical or web interface
 
-## Author
-
-**Vartika Tomar**
-
-VIT Bhopal University
-
-## License
-
-This project is created for educational and academic purposes.
