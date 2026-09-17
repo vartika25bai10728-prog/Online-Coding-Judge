@@ -1,0 +1,5 @@
+1|Add Two Numbers|Read two integers and print their sum.|5 3|8
+2|Find Maximum|Read two integers and print the larger number.|10 7|10
+3|Check Even|Read an integer and print Even if it is divisible by 2, otherwise print Odd.|6|Even
+4|Square Number|Read an integer and print its square.|5|25
+5|Positive or Negative|Read an integer and print Positive if it is greater than zero, Negative if it is less than zero, otherwise print Zero.|-8|Negative
