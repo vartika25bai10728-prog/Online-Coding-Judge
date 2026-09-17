@@ -101,9 +101,9 @@ export const ProblemsPage: React.FC<ProblemsPageProps> = ({ onSelectProblem }) =
       {/* Header & Stats Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white font-sans">Problem Repository</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white font-sans">Problems</h1>
           <p className="text-sm text-slate-400 mt-1">
-            20 high-yield interview challenges verified across 4 languages with sub-millisecond execution.
+            Browse and practice programming questions. Filter by topic or difficulty.
           </p>
         </div>
 

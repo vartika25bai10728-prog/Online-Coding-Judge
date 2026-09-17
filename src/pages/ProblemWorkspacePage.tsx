@@ -729,19 +729,19 @@ export const ProblemWorkspacePage: React.FC<ProblemWorkspacePageProps> = ({ slug
 
               {activeConsoleTab === 'result' && (
                 <div>
-                  {/* Status Indicator & Asynchronous Stepper */}
+                  {/* Status Indicator */}
                   {isSubmitting && currentSubmission && (
                     <div className="p-3 bg-indigo-950/30 border border-indigo-800/40 rounded-lg mb-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-indigo-300 flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
-                          <span>Async Judge Pipeline:</span>
+                          <span>Evaluating:</span>
                           <strong className="text-white uppercase tracking-wider font-mono">
                             {currentSubmission.status}
                           </strong>
                         </span>
                         <span className="text-[11px] text-slate-400 font-mono">
-                          Tests Evaluated: {currentSubmission.passedTests} / {currentSubmission.totalTests}
+                          Tests: {currentSubmission.passedTests} / {currentSubmission.totalTests}
                         </span>
                       </div>
 

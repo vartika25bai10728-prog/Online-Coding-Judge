@@ -12,24 +12,23 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <nav className="border-b border-slate-800/80 bg-[#0c121e]/90 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3">
+    <nav className="border-b border-slate-800 bg-[#0c121e] sticky top-0 z-50 px-4 lg:px-8 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo & Navigation */}
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6">
           <button
             id="nav-logo-btn"
             onClick={() => onNavigate('landing')}
-            className="flex items-center gap-2.5 text-left group cursor-pointer focus:outline-none"
+            className="flex items-center gap-2.5 text-left cursor-pointer focus:outline-none"
           >
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 via-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/30 transition-all">
-              <Terminal className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-mono font-bold text-white text-xs">
+              &lt;/&gt;
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-base tracking-tight text-white font-mono">APEX</span>
-                <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800/60 uppercase tracking-wider">JUDGE</span>
+                <span className="font-bold text-base text-white font-sans">Apex Judge</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">student project</span>
               </div>
-              <p className="text-[10px] text-slate-400 font-mono tracking-wider -mt-0.5">ISOLATED SANDBOX ENGINE</p>
             </div>
           </button>
 
@@ -38,9 +37,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             <button
               id="nav-link-problems"
               onClick={() => onNavigate('problems')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 currentPage === 'problems' || currentPage === 'problem'
-                  ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30'
+                  ? 'bg-slate-800 text-white font-semibold'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
@@ -49,41 +48,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             </button>
 
             <button
-              id="nav-link-contests"
-              onClick={() => onNavigate('contests')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all relative ${
-                currentPage === 'contests' || currentPage === 'contest-details'
-                  ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <Trophy className="w-4 h-4" />
-              <span>Contests</span>
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-            </button>
-
-            <button
-              id="nav-link-leaderboard"
-              onClick={() => onNavigate('leaderboard')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                currentPage === 'leaderboard'
-                  ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-              }`}
-            >
-              <ListOrdered className="w-4 h-4" />
-              <span>Leaderboard</span>
-            </button>
-
-            <button
               id="nav-link-submissions"
               onClick={() => onNavigate('submissions')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 currentPage === 'submissions'
-                  ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30'
+                  ? 'bg-slate-800 text-white font-semibold'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >
@@ -92,11 +61,37 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             </button>
 
             <button
+              id="nav-link-leaderboard"
+              onClick={() => onNavigate('leaderboard')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                currentPage === 'leaderboard'
+                  ? 'bg-slate-800 text-white font-semibold'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <ListOrdered className="w-4 h-4" />
+              <span>Leaderboard</span>
+            </button>
+
+            <button
+              id="nav-link-contests"
+              onClick={() => onNavigate('contests')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                currentPage === 'contests' || currentPage === 'contest-details'
+                  ? 'bg-slate-800 text-white font-semibold'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <Trophy className="w-4 h-4" />
+              <span>Contests</span>
+            </button>
+
+            <button
               id="nav-link-discussions"
               onClick={() => onNavigate('discussions')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 currentPage === 'discussions'
-                  ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30'
+                  ? 'bg-slate-800 text-white font-semibold'
                   : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
               }`}
             >

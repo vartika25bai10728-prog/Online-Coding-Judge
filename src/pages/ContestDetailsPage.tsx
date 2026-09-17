@@ -70,8 +70,7 @@ export const ContestDetailsPage: React.FC<ContestDetailsPageProps> = ({ contestI
       </button>
 
       {/* Contest Banner Card */}
-      <div className="bg-[#111827] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-[#111827] border border-slate-800 rounded-xl p-6 shadow-sm">
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">

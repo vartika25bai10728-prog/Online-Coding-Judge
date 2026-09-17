@@ -38,13 +38,9 @@ export const ContestsPage: React.FC<ContestsPageProps> = ({ onNavigate }) => {
     <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
       {/* Header */}
       <div className="border-b border-slate-800 pb-6">
-        <div className="flex items-center gap-2 text-indigo-400 font-mono text-xs mb-1">
-          <Trophy className="w-4 h-4" />
-          <span>APEX COMPETITIVE PROGRAMMING</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">Competitive Contests</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">Contests</h1>
         <p className="text-sm text-slate-400 mt-1">
-          Compete in ICPC and LeetCode-style algorithmic rounds with real-time ICPC penalty scoring.
+          Participate in timed contests and track standings on the scoreboard.
         </p>
       </div>
 

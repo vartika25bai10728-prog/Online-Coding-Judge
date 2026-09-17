@@ -107,9 +107,9 @@ export const DiscussionsPage: React.FC<DiscussionsPageProps> = ({ onNavigate }) 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Algorithm Discussions</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Discussions</h1>
           <p className="text-sm text-slate-400 mt-1">
-            Exchange optimal time/space solutions, interview insights, and algorithmic proofs.
+            Discuss problems, ask questions, and share solution approaches.
           </p>
         </div>
 

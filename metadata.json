@@ -1,6 +1,6 @@
 {
   "name": "Apex Online Coding Judge",
-  "description": "Production-grade asynchronous Online Coding Judge with isolated code execution, Monaco editor, real-time verdicts, contests, leaderboards, and detailed analytics.",
+  "description": "A simple online coding judge to practice programming problems, run code with test cases, and track submissions.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

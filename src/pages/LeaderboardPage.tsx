@@ -43,13 +43,9 @@ export const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onNavigate }) 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <div className="flex items-center gap-2 text-amber-400 font-mono text-xs mb-1">
-            <Trophy className="w-4 h-4" />
-            <span>GLOBAL HALL OF FAME</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Global Leaderboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Leaderboard</h1>
           <p className="text-sm text-slate-400 mt-1">
-            Top competitive coders ranked by Elo rating and verified problem solution volume.
+            User rankings by rating and solved problems.
           </p>
         </div>
 
