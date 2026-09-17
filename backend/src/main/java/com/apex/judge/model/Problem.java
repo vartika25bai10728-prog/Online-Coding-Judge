@@ -104,6 +104,8 @@ public class Problem {
     public Integer getTotalAccepted() { return totalAccepted; }
     public void setTotalAccepted(Integer totalAccepted) { this.totalAccepted = totalAccepted; }
 
+    public Integer getAcceptedSubmissions() { return totalAccepted != null ? totalAccepted : 0; }
+
     public String getStarterPython() { return starterPython; }
     public void setStarterPython(String starterPython) { this.starterPython = starterPython; }
 

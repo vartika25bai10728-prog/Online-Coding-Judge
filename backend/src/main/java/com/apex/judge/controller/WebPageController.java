@@ -199,8 +199,12 @@ public class WebPageController {
 
         submissionRepository.save(submission);
 
-        // Enqueue submission
-        judgeQueueService.enqueueSubmission(submission.getId());
+        // Enqueue submission in Redis (with fallback for standalone runtime)
+        try {
+            judgeQueueService.enqueueSubmission(submission.getId());
+        } catch (Exception ignored) {
+            // Queue polling will be bypassed by immediate worker execution below
+        }
 
         // Immediately evaluate in worker to provide synchronous feedback for user review
         try {

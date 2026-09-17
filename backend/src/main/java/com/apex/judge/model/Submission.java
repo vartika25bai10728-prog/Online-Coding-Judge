@@ -101,4 +101,11 @@ public class Submission {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public String getFormattedCreatedAt() {
+        if (createdAt == null) return "--";
+        return java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                .withZone(java.time.ZoneId.of("UTC"))
+                .format(createdAt);
+    }
 }

@@ -82,7 +82,7 @@
                         style="display: inline-block; background-color: var(--bg-muted); color: var(--text-secondary); font-size: 0.75rem; padding: 0.15rem 0.45rem; border-radius: 4px; margin-right: 0.35rem;" 
                         th:text="${#strings.trim(tag)}">arrays</span>
                 </td>
-                <td th:text="${prob.totalSubmissions > 0 ? #numbers.formatDecimal((prob.acceptedSubmissions * 100.0 / prob.totalSubmissions), 1, 1) + '%' : '0.0%'}">0.0%</td>
+                <td th:text="${prob.totalSubmissions != null and prob.totalSubmissions > 0 ? #numbers.formatDecimal((prob.totalAccepted * 100.0 / prob.totalSubmissions), 1, 1) + '%' : '0.0%'}">0.0%</td>
                 <td th:text="${prob.totalSubmissions}">0</td>
                 <td style="text-align: right;">
                   <a th:href="@{'/problems/' + ${prob.slug}}" class="btn btn-outline btn-sm">Solve Challenge &rarr;</a>

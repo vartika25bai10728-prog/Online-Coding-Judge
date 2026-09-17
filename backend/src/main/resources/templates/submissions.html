@@ -56,7 +56,7 @@
                 </td>
                 <td th:text="${sub.passedTests} + ' / ' + ${sub.totalTests}">3 / 3</td>
                 <td th:text="${sub.runtimeMs != null ? sub.runtimeMs + ' ms' : '--'}">18 ms</td>
-                <td style="color: var(--text-muted); font-size: 0.8rem;" th:text="${#temporals.format(sub.createdAt, 'yyyy-MM-dd HH:mm')}">2026-09-15</td>
+                <td style="color: var(--text-muted); font-size: 0.8rem;" th:text="${sub.formattedCreatedAt}">2026-09-15</td>
                 <td style="text-align: right;">
                   <a th:href="@{'/submissions/' + ${sub.id}}" class="btn btn-outline btn-sm">Inspect &rarr;</a>
                 </td>

@@ -84,7 +84,7 @@
                 <td><span style="font-family: var(--code-font); font-size: 0.8rem;" th:text="${#strings.toUpperCase(sub.language)}">JAVA</span></td>
                 <td th:text="${sub.runtimeMs} + ' ms'" style="color: var(--success); font-weight: 600;">14 ms</td>
                 <td><span class="badge badge-accepted">ACCEPTED</span></td>
-                <td style="color: var(--text-muted); font-size: 0.8rem;" th:text="${#temporals.format(sub.createdAt, 'yyyy-MM-dd HH:mm')}">2026-09-15</td>
+                <td style="color: var(--text-muted); font-size: 0.8rem;" th:text="${sub.formattedCreatedAt}">2026-09-15</td>
                 <td style="text-align: right;">
                   <a th:href="@{'/submissions/' + ${sub.id}}" class="btn btn-outline btn-sm">Solution &rarr;</a>
                 </td>
